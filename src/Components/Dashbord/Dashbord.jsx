@@ -1,3 +1,5 @@
+import Input from "../Input/Input";
+
 const Dashboard = () => {
     const contacts = [
         {
@@ -81,7 +83,7 @@ const Dashboard = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-phone"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" /></svg>
                     </div>
                 </div>
-                <div className="h-[75%]  w-full overflow-x-scroll mt-2">
+                <div className="h-[75%]  w-full overflow-auto mt-2">
                     <div className="h-[1000px] px-10 py-10 ">
                         <div className="max-w-[60%] mb-6 p-4 rounded-b-xl bg-gray-200 rounded-tr-xl">
                             Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sit, dolor!
@@ -95,6 +97,15 @@ const Dashboard = () => {
                         <div className="ml-auto mb-6 p-4 max-w-[60%] rounded-b-xl bg-stone-200 rounded-tl-xl">
                             Lorem ipsum dolor sit, amet consectetur adipisicing elit. Modi, soluta.
                         </div>
+                    </div>
+                </div>
+                <div className="p-10 w-full flex items-center">
+                    <Input placeholder="Type your message here ..." />
+                    <div className="ml-2 p-2 rounded-full cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-send"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M10 14l11 -11" /><path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" /></svg>
+                    </div>
+                    <div className="ml-2 p-2 rounded-full cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-plus"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M9 12h6" /><path d="M12 9v6" /></svg>
                     </div>
                 </div>
             </div>
