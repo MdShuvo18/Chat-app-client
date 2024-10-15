@@ -67,6 +67,7 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+
             <div className="w-[50%] bg-white border border-black h-screen flex flex-col items-center">
                 <div className="w-[75%] mt-10 bg-indigo-50 rounded-full h-[70px] flex items-center px-6">
                     <div className="cursor-pointer">
@@ -80,7 +81,24 @@ const Dashboard = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-phone"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" /></svg>
                     </div>
                 </div>
+                <div className="h-[75%]  w-full overflow-x-scroll mt-2">
+                    <div className="h-[1000px] px-10 py-10 ">
+                        <div className="max-w-[60%] mb-6 p-4 rounded-b-xl bg-gray-200 rounded-tr-xl">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sit, dolor!
+                        </div>
+                        <div className="ml-auto mb-6 p-4 max-w-[60%] rounded-b-xl bg-stone-200 rounded-tl-xl">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Modi, soluta.
+                        </div>
+                        <div className="max-w-[60%] mb-6 p-4 rounded-b-xl bg-gray-200 rounded-tr-xl">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Sit, dolor!
+                        </div>
+                        <div className="ml-auto mb-6 p-4 max-w-[60%] rounded-b-xl bg-stone-200 rounded-tl-xl">
+                            Lorem ipsum dolor sit, amet consectetur adipisicing elit. Modi, soluta.
+                        </div>
+                    </div>
+                </div>
             </div>
+
             <div className="w-[25%] border border-black h-screen"></div>
         </div>
     );
