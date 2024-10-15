@@ -11,7 +11,7 @@ const Input = ({
     onChange = (e) => {e.preventDefault() }
 }) => {
     return (
-        <div className="w-1/2">
+        <div className="w-full">
             <label className="form-control w-full max-w-xs">
                 <div className="label">
                     <span className="label-text">{label}</span>

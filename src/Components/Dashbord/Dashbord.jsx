@@ -31,7 +31,7 @@ const Dashboard = () => {
 
     return (
         <div className="w-screen flex">
-            <div className="w-[25%] bg-indigo-50 border border-black h-screen">
+            <div className="w-[25%] bg-indigo-50 border  h-screen">
                 <div className="flex justify-center items-center p-14">
                     <img
                         src="https://i.ibb.co/kqSnnFn/download-1.jpg"
@@ -70,7 +70,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="w-[50%] bg-white border border-black h-screen flex flex-col items-center">
+            <div className="w-[50%] bg-white border  h-screen flex flex-col items-center">
                 <div className="w-[75%] mt-10 bg-indigo-50 rounded-full h-[70px] flex items-center px-6">
                     <div className="cursor-pointer">
                         <img src="https://i.ibb.co/kqSnnFn/download-1.jpg" alt="" width={50} height={50} className="rounded-full" />
@@ -110,7 +110,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="w-[25%] border border-black h-screen"></div>
+            <div className="w-[25%] border  h-screen"></div>
         </div>
     );
 };
