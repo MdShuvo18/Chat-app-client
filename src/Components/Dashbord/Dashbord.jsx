@@ -1,46 +1,42 @@
 import { useEffect, useState } from "react";
 import Input from "../Input/Input";
+import useAxiosPublic from "../../useAxios/useAxios";
 
 const Dashboard = () => {
-    const contacts = [
-        {
-            name: 'John',
-            status: 'active',
-            img: "https://i.ibb.co/kqSnnFn/download-1.jpg"
-        },
-        {
-            name: 'Larry',
-            status: 'active',
-            img: "https://i.ibb.co/kqSnnFn/download-1.jpg"
-        },
-        {
-            name: 'Marry',
-            status: 'active',
-            img: "https://i.ibb.co/kqSnnFn/download-1.jpg"
-        },
-        {
-            name: 'Christofer',
-            status: 'active',
-            img: "https://i.ibb.co/kqSnnFn/download-1.jpg"
-        },
-        {
-            name: 'Alex',
-            status: 'active',
-            img: "https://i.ibb.co/kqSnnFn/download-1.jpg"
-        },
-    ];
     const [user, setUser] = useState(null);
+    const [conversations, setConversations] = useState([]);
+    const axios = useAxiosPublic();
 
-    // Fetch user info from localStorage or API response
+    // Fetch user info from localStorage
     useEffect(() => {
-        const userData = JSON.parse(localStorage.getItem('user'));
-        if (userData) {
-            setUser(userData);
+        const storedUserData = JSON.parse(localStorage.getItem('user'));
+        if (storedUserData) {
+            setUser(storedUserData);
         }
     }, []);
+
+    // Fetch conversations from API
+    useEffect(() => {
+        const fetchConversations = async () => {
+            try {
+                if (user?.id) {
+                    const response = await axios.get(`/api/conversation/${user.id}`);
+                    if (response.status === 200) {
+                        setConversations(response.data);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching conversations:", error);
+            }
+        };
+
+        fetchConversations();
+    }, [user, axios]);
+
     return (
         <div className="w-screen flex">
-            <div className="w-[25%] bg-indigo-50 border  h-screen">
+            {/* Left Sidebar - User Info & Messages */}
+            <div className="w-[25%] bg-indigo-50 border h-screen">
                 <div className="flex justify-center items-center p-14">
                     <img
                         src="https://i.ibb.co/kqSnnFn/download-1.jpg"
@@ -50,27 +46,27 @@ const Dashboard = () => {
                         className="rounded-full"
                     />
                     <div className="ml-4">
-                    <h1 className="text-2xl font-semibold">{user?.name }</h1>
+                        <h1 className="text-2xl font-semibold">{user?.name || "User"}</h1>
                         <h1 className="text-lg font-medium">My Account</h1>
                     </div>
                 </div>
                 <hr />
                 <div className="p-8">
                     <div className="text-lg text-green-500 font-semibold">Messages</div>
-                    <div className="">
-                        {contacts.map(({ name, status, img }) => {
+                    <div>
+                        {conversations.map((conversation) => {
                             return (
-                                <div key={name} className="flex items-center my-8   cursor-pointer">
+                                <div key={conversation.id} className="flex items-center my-8 cursor-pointer">
                                     <img
-                                        src={img}
-                                        alt={name}
+                                        src={'https://i.ibb.co/kqSnnFn/download-1.jpg'}
+                                        alt="photo"
                                         width={50}
                                         height={50}
                                         className="rounded-full"
                                     />
                                     <div className="ml-4">
-                                        <h1 className="text-lg font-semibold">{name}</h1>
-                                        <h1 className="text-sm font-medium">{status}</h1>
+                                        <h1 className="text-lg font-semibold">{conversation.userName || "User"}</h1>
+                                        <h1 className="text-sm font-medium">{conversation.email}</h1>
                                     </div>
                                 </div>
                             );

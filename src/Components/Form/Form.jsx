@@ -12,12 +12,12 @@ const Form = ({ isSignIn = true }) => {
         password: ''
     });
     const navigate = useNavigate();
-    const axiosInstance = useAxiosPublic(); // Make sure axios is instantiated properly
+    const axios = useAxiosPublic(); // Make sure axios is instantiated properly
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post(`/api/${isSignIn ? 'login' : 'register'}`, {
+            const response = await axios.post(`/api/${isSignIn ? 'login' : 'register'}`, {
                 ...(data.fullName && { fullName: data.fullName }), // Include fullName only if it's a sign-up
                 email: data.email,
                 password: data.password
