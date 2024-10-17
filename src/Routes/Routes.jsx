@@ -3,14 +3,16 @@ import Main from "../Layout/Main";
 import Form from "../Components/Form/Form";
 import Dashboard from "../Components/Dashbord/Dashbord";
 
+// for protected purposes
+
 const router = createBrowserRouter([
     {
         path: "/",
         element: <Main />,
         children: [
-            { path: '/', element: <Dashboard /> },
+            { path: '/', element:<Dashboard /> },
             { path: '/users/sign-in', element: <Form isSignIn={true} /> },
-            { path: '/users/sign-up', element: <Form isSignIn={false} /> }
+            { path: '/users/sign-up', element:<Form isSignIn={false} />}
         ]
     },
 ]);

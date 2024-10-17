@@ -3,31 +3,75 @@ import { useState } from "react";
 import Button from "../Button/Button";
 import Input from "../Input/Input";
 import { useNavigate } from "react-router-dom";
+import useAxiosPublic from "../../useAxios/useAxios";
 
-
-const Form = ({ isSignIn = true, }) => {
+const Form = ({ isSignIn = true }) => {
     const [data, setData] = useState({
         ...(!isSignIn && { fullName: '' }),
         email: '',
         password: ''
-    })
-    console.log(data)
-    const navigate = useNavigate()
+    });
+    const navigate = useNavigate();
+    const axiosInstance = useAxiosPublic(); // Make sure axios is instantiated properly
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axiosInstance.post(`/api/${isSignIn ? 'login' : 'register'}`, {
+                ...(data.fullName && { fullName: data.fullName }), // Include fullName only if it's a sign-up
+                email: data.email,
+                password: data.password
+            });
+
+            console.log("Response:", response.data);
+            // Store the user data and token in localStorage
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('token', response.data.token);
+            // Navigate to the dashboard or home page after successful login/register
+            navigate('/');
+        } catch (error) {
+            console.error("Error:", error.response ? error.response.data : error.message);
+            // You can display an error message to the user here
+        }
+    };
+
     return (
         <div className="h-screen flex justify-center items-center">
             <div className="bg-white w-[400px] h-[600px] shadow-lg p-10 space-y-4">
                 <div className="text-4xl font-bold">Welcome {isSignIn && "Back"}</div>
-                <div className="text-2xl font-semibold">{isSignIn ? "Sign in to explore" : "Sign Up for Start"}</div>
+                <div className="text-2xl font-semibold">{isSignIn ? "Sign in to explore" : "Sign Up to Start"}</div>
                 <div className="space-y-4">
-                    <form className="space-y-4" onSubmit={() => console.log("submitted")}>
-                        {!isSignIn && <Input label="Full name" name="name" placeholder="write your name" type="text" isRequired="true" value={data.fullName} onChange={(e) => setData({ ...data, fullName: e.target.value })}></Input>}
-
-                        <Input label="Email address" name="email" placeholder="enter your email" type="email" isRequired="true" value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })}></Input>
-
-                        <Input label="Password" name="password" placeholder="set your password" type="password" isRequired="true" value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })}></Input>
-
-                        <Button label={isSignIn ? "Sign in" : "Sign up"} type="submit"></Button>
-
+                    <form className="space-y-4" onSubmit={handleSubmit}>
+                        {!isSignIn && (
+                            <Input
+                                label="Full name"
+                                name="name"
+                                placeholder="Enter your name"
+                                type="text"
+                                isRequired={true}
+                                value={data.fullName}
+                                onChange={(e) => setData({ ...data, fullName: e.target.value })}
+                            />
+                        )}
+                        <Input
+                            label="Email address"
+                            name="email"
+                            placeholder="Enter your email"
+                            type="email"
+                            isRequired={true}
+                            value={data.email}
+                            onChange={(e) => setData({ ...data, email: e.target.value })}
+                        />
+                        <Input
+                            label="Password"
+                            name="password"
+                            placeholder="Set your password"
+                            type="password"
+                            isRequired={true}
+                            value={data.password}
+                            onChange={(e) => setData({ ...data, password: e.target.value })}
+                        />
+                        <Button label={isSignIn ? "Sign in" : "Sign up"} type="submit" />
                     </form>
                     <div>
                         {isSignIn ? (
@@ -46,7 +90,6 @@ const Form = ({ isSignIn = true, }) => {
                             </>
                         )}
                     </div>
-
                 </div>
             </div>
         </div>

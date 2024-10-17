@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Input from "../Input/Input";
 
 const Dashboard = () => {
@@ -28,7 +29,15 @@ const Dashboard = () => {
             img: "https://i.ibb.co/kqSnnFn/download-1.jpg"
         },
     ];
+    const [user, setUser] = useState(null);
 
+    // Fetch user info from localStorage or API response
+    useEffect(() => {
+        const userData = JSON.parse(localStorage.getItem('user'));
+        if (userData) {
+            setUser(userData);
+        }
+    }, []);
     return (
         <div className="w-screen flex">
             <div className="w-[25%] bg-indigo-50 border  h-screen">
@@ -41,7 +50,7 @@ const Dashboard = () => {
                         className="rounded-full"
                     />
                     <div className="ml-4">
-                        <h1 className="text-2xl font-semibold">Miss Dev</h1>
+                    <h1 className="text-2xl font-semibold">{user?.name }</h1>
                         <h1 className="text-lg font-medium">My Account</h1>
                     </div>
                 </div>
