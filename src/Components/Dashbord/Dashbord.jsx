@@ -5,7 +5,7 @@ import useAxiosPublic from "../../useAxios/useAxios";
 const Dashboard = () => {
     const [user, setUser] = useState(null);
     const [conversations, setConversations] = useState([]);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState();
     const axios = useAxiosPublic();
 
     // Fetch user info from localStorage
@@ -37,22 +37,21 @@ const Dashboard = () => {
     const handleMessages = async (conversationId) => {
         try {
             console.log("Fetching conversation with ID:", conversationId);
-
+    
             // Make API call to fetch messages
-            await axios.get(`/api/messages/${conversationId}`)
-            .then(res=>console.log(res));
-            // console.log("API call completed. Status:", res);  // Debugging log
-
-            // if (res.status === 200) {
-            //     const data = res.data;
-            //     console.log("Message received:", data);  // Log the data received
-            //     setMessages(data);
-            // } 
+            const res = await axios.get(`/api/messages/${conversationId}`);
+            console.log("API call completed. Status:", res);  // Debugging log
+    
+            if (res.status === 200) {
+                const data = res.data;
+                console.log("Message received:", data);  // Log the data received
+                setMessages(data);
+            } 
         } catch (error) {
             console.error("Error fetching conversation:", error.message || error);
         }
     };
-
+    
 
 
 
@@ -127,9 +126,9 @@ const Dashboard = () => {
                 <div className="h-[75%] w-full overflow-auto mt-2">
                     <div className="h-[1000px] px-10 py-10 ">
                         {
-                            messages.map((message, index) => (
+                            messages?.map((message, index) => (
                                 <div key={index} className={`max-w-[60%] mb-6 p-4 ${message.senderId === user?.id ? 'ml-auto bg-stone-200 rounded-tl-xl' : 'bg-gray-200 rounded-tr-xl'} rounded-b-xl`}>
-                                    {message.text}
+                                    {message.message}
                                 </div>
                             ))
                         }
