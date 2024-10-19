@@ -5,7 +5,7 @@ import useAxiosPublic from "../../useAxios/useAxios";
 const Dashboard = () => {
     const [user, setUser] = useState(null);
     const [conversations, setConversations] = useState([]);
-    const [messages, setMessages] = useState();
+    const [messages, setMessages] = useState([]);
     const axios = useAxiosPublic();
 
     // Fetch user info from localStorage
@@ -33,27 +33,23 @@ const Dashboard = () => {
         fetchConversations();
     }, [user, axios]);
 
-
     const handleMessages = async (conversationId) => {
         try {
             console.log("Fetching conversation with ID:", conversationId);
-    
+
             // Make API call to fetch messages
             const res = await axios.get(`/api/messages/${conversationId}`);
-            console.log("API call completed. Status:", res);  // Debugging log
-    
+            console.log("API call completed. Status:", res);
+
             if (res.status === 200) {
-                const data = res.data;
-                console.log("Message received:", data);  // Log the data received
+                const data = res.data || []; // Ensure data is not null or undefined
+                console.log("Message received:", data);
                 setMessages(data);
-            } 
+            }
         } catch (error) {
             console.error("Error fetching conversation:", error.message || error);
         }
     };
-    
-
-
 
     return (
         <div className="w-screen flex">
@@ -81,7 +77,7 @@ const Dashboard = () => {
                                 conversations.map(({ conversationId, userName, email }) => {
                                     return (
                                         <div
-                                            key={conversationId.id}
+                                            key={conversationId}
                                             className="flex items-center my-8 cursor-pointer"
                                             onClick={() => handleMessages(conversationId)} // Pass conversation ID
                                         >
@@ -105,7 +101,7 @@ const Dashboard = () => {
             </div>
 
             {/* Chat Messages Section */}
-            <div className="w-[50%] bg-white border  h-screen flex flex-col items-center">
+            <div className="w-[50%] bg-white border h-screen flex flex-col items-center">
                 <div className="w-[75%] mt-10 bg-indigo-50 rounded-full h-[70px] flex items-center px-6">
                     <div className="cursor-pointer">
                         <img src="https://i.ibb.co/kqSnnFn/download-1.jpg" alt="" width={50} height={50} className="rounded-full" />
@@ -123,17 +119,26 @@ const Dashboard = () => {
                 </div>
 
                 {/* Displaying Messages */}
-                <div className="h-[75%] w-full overflow-auto mt-2">
-                    <div className="h-[1000px] px-10 py-10 ">
-                        {
-                            messages?.map((message, index) => (
-                                <div key={index} className={`max-w-[60%] mb-6 p-4 ${message.senderId === user?.id ? 'ml-auto bg-stone-200 rounded-tl-xl' : 'bg-gray-200 rounded-tr-xl'} rounded-b-xl`}>
-                                    {message.message}
-                                </div>
-                            ))
-                        }
+                <div className="h-[75%] w-full overflow-x-scroll mt-2">
+                    <div className="h-[1000px] px-10 py-10">
+                        {messages.length > 0 ? (
+                            messages.map(({ message, user: { id } = {} }) => {
+                                return id === user?.id ? (
+                                    <div key={id} className="ml-auto mb-6 p-4 max-w-[60%] rounded-b-xl bg-stone-200 rounded-tl-xl">
+                                        {message}
+                                    </div>
+                                ) : (
+                                    <div key={id} className="max-w-[60%] mb-6 p-4 rounded-b-xl bg-gray-200 rounded-tr-xl">
+                                        {message}
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div>No messages to display</div>
+                        )}
                     </div>
                 </div>
+
 
                 {/* Message Input */}
                 <div className="p-10 w-full flex items-center">
@@ -155,7 +160,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="w-[25%] border  h-screen"></div>
+            <div className="w-[25%] border h-screen"></div>
         </div>
     );
 };
