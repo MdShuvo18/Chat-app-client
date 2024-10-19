@@ -41,7 +41,6 @@ const Dashboard = () => {
 
             // Set the selected conversation
             const selectedConv = conversations.find(conv => conv.conversationId === conversationId);
-            // console.log(selectedConv);
             setSelectedConversation(selectedConv);
 
             // Make API call to fetch messages
@@ -49,8 +48,7 @@ const Dashboard = () => {
             console.log("API call completed. Status:", res);
 
             if (res.status === 200) {
-                const data = res.data || []; // Ensure data is not null or undefined
-                console.log("Message received:", data);
+                const data = res.data || [];
                 setMessages(data);
             }
         } catch (error) {
@@ -58,11 +56,27 @@ const Dashboard = () => {
         }
     };
 
-    const sendMessage = (e) => { }
+    const sendMessage = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.post(`/api/messages`, {
+                conversationId: selectedConversation.conversationId,
+                senderId: user.id,
+                message: messageInput,
+            });
+
+            if (response.status === 201) {
+                console.log("Message sent successfully!");
+                setMessageInput(''); // Optionally, clear the message input
+                handleMessages(selectedConversation.conversationId); // Refresh messages after sending
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
+        }
+    };
 
     return (
         <div className="w-screen flex">
-            {/* Left Sidebar - User Info & Messages */}
             <div className="w-[25%] bg-indigo-50 border h-screen">
                 <div className="flex justify-center items-center p-14">
                     <img
@@ -108,7 +122,6 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Chat Messages Section */}
             <div className="w-[50%] bg-white border h-screen flex flex-col items-center">
                 {selectedConversation ? (
                     <div className="w-[75%] mt-10 bg-indigo-50 rounded-full h-[70px] flex items-center px-6">
@@ -128,9 +141,6 @@ const Dashboard = () => {
                     </div>
                 ) : null}
 
-
-
-                {/* Displaying Messages */}
                 <div className="h-[75%] w-full overflow-x-scroll mt-2">
                     <div className="h-[1000px] px-10 py-10">
                         {messages.length > 0 ? (
@@ -146,32 +156,17 @@ const Dashboard = () => {
                                 )
                             ))
                         ) : (
-                            <div className="p-14  w-full text-xl font-bold">No conersation selected</div>
+                            <div className="p-14  w-full text-xl font-bold">No conversation selected</div>
                         )}
                     </div>
                 </div>
 
-                {/* Message Input */}
-                {
-                    selectedConversation ? <div className="p-10 w-full flex items-center">
-                        <Input placeholder="Type your message here ..." value={messageInput} onChange={(e) => setMessageInput(e.target.value)} />
-                        <div className="ml-2 p-2 rounded-full cursor-pointer" onClick={() => sendMessage()}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-send">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M10 14l11 -11" />
-                                <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
-                            </svg>
-                        </div>
-                        <div className="ml-2 p-2 rounded-full cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-plus">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M9 12h6" />
-                                <path d="M12 9v6" />
-                            </svg>
-                        </div>
-                    </div> : ''
-                }
-
+                <div className="p-10 w-full flex items-center">
+                    <Input placeholder="Type your message here ..." value={messageInput} onChange={(e) => setMessageInput(e.target.value)} />
+                    <div className={`ml-2 p-2 rounded-full cursor-pointer ${!messageInput && "pointer-events-none"}`} onClick={sendMessage}>
+                        <button className="btn btn-outline ">Send</button>
+                    </div>
+                </div>
             </div>
 
             <div className="w-[25%] border h-screen"></div>
