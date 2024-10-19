@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import Input from "../Input/Input";
 import useAxiosPublic from "../../useAxios/useAxios";
+import Input from "../Input/Input";
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -8,6 +8,7 @@ const Dashboard = () => {
     const [messages, setMessages] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [messageInput, setMessageInput] = useState("");
+    const [allUsers, setAllUsers] = useState([]);
     const axios = useAxiosPublic();
 
     // Fetch user info from localStorage
@@ -34,6 +35,21 @@ const Dashboard = () => {
         };
         fetchConversations();
     }, [user, axios]);
+
+    useEffect(() => {
+        // Fetch all users (for autocomplete feature)
+        const fetchAllUsers = async () => {
+            try {
+                const response = await axios.get('/api/users');
+                if (response.status === 200) {
+                    setAllUsers(response.data);
+                }
+            } catch (error) {
+                console.error("Error fetching all users:", error);
+            }
+        };
+        fetchAllUsers();
+    }, []);
 
     const handleMessages = async (conversationId) => {
         try {
@@ -78,10 +94,11 @@ const Dashboard = () => {
     return (
         <div className="w-screen flex">
             <div className="w-[25%] bg-indigo-50 border h-screen">
+                {/* User Information */}
                 <div className="flex justify-center items-center p-14">
                     <img
                         src="https://i.ibb.co/kqSnnFn/download-1.jpg"
-                        alt=""
+                        alt="User Avatar"
                         width={75}
                         height={75}
                         className="rounded-full"
@@ -92,6 +109,7 @@ const Dashboard = () => {
                     </div>
                 </div>
                 <hr />
+                {/* Conversations List */}
                 <div className="p-8">
                     <div className="text-lg text-green-500 font-semibold">Messages</div>
                     <div>
@@ -104,7 +122,7 @@ const Dashboard = () => {
                                 >
                                     <img
                                         src={'https://i.ibb.co/kqSnnFn/download-1.jpg'}
-                                        alt="photo"
+                                        alt="Conversation Avatar"
                                         width={50}
                                         height={50}
                                         className="rounded-full"
@@ -122,6 +140,7 @@ const Dashboard = () => {
                 </div>
             </div>
 
+            {/* Messages Section */}
             <div className="w-[50%] bg-white border h-screen flex flex-col items-center">
                 {selectedConversation ? (
                     <div className="w-[75%] mt-10 bg-indigo-50 rounded-full h-[70px] flex items-center px-6">
@@ -132,15 +151,10 @@ const Dashboard = () => {
                             <h1 className="text-lg font-medium">{selectedConversation?.userName || ""}</h1>
                             <h2 className="text-sm text-gray-500 font-semibold">online</h2>
                         </div>
-                        <div className="cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-phone">
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                                <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" />
-                            </svg>
-                        </div>
                     </div>
                 ) : null}
 
+                {/* Messages */}
                 <div className="h-[75%] w-full overflow-x-scroll mt-2">
                     <div className="h-[1000px] px-10 py-10">
                         {messages.length > 0 ? (
@@ -161,6 +175,7 @@ const Dashboard = () => {
                     </div>
                 </div>
 
+                {/* Send Message Input */}
                 <div className="p-10 w-full flex items-center">
                     <Input placeholder="Type your message here ..." value={messageInput} onChange={(e) => setMessageInput(e.target.value)} />
                     <div className={`ml-2 p-2 rounded-full cursor-pointer ${!messageInput && "pointer-events-none"}`} onClick={sendMessage}>
@@ -169,7 +184,27 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            <div className="w-[25%] border h-screen"></div>
+            {/* Display All Users Except Logged-in User */}
+            <div className="w-[25%] border h-screen">
+                <div className="text-lg text-green-500 font-semibold px-10 py-16">People</div>
+                {allUsers
+                    .filter((allUser) => allUser.id !== user?.id) // Filter out the logged-in user
+                    .map((filteredUser) => (
+                        <div key={filteredUser.id} className="flex items-center my-8">
+                            <img
+                                src="https://i.ibb.co/kqSnnFn/download-1.jpg"
+                                alt="User Avatar"
+                                width={50}
+                                height={50}
+                                className="rounded-full"
+                            />
+                            <div className="ml-4">
+                                <h1 className="text-lg font-semibold">{filteredUser.name}</h1>
+                                <h1 className="text-sm font-medium">{filteredUser.email}</h1>
+                            </div>
+                        </div>
+                    ))}
+            </div>
         </div>
     );
 };
