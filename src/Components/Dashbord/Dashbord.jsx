@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useAxiosPublic from "../../useAxios/useAxios";
 import Input from "../Input/Input";
+import { io } from 'socket.io-client'
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -9,8 +10,16 @@ const Dashboard = () => {
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [messageInput, setMessageInput] = useState("");
     const [allUsers, setAllUsers] = useState([]);
-    const [selectedUser, setSelectedUser] = useState('')
+    const [selectedUser, setSelectedUser] = useState('');
+    const [socket, setSocket] = useState([])
     const axios = useAxiosPublic();
+
+    // socket part
+    useEffect(() => {
+        setSocket(io('http://localhost:5050'))
+    }, [])
+
+
 
 
     // Fetch user info from localStorage
@@ -80,14 +89,14 @@ const Dashboard = () => {
             console.error("No conversation selected for sending messages.");
             return;
         }
-    
+
         try {
             const response = await axios.post(`/api/messages`, {
                 conversationId: selectedConversation.conversationId,
                 senderId: user.id,
                 message: messageInput,
             });
-    
+
             if (response.status === 201) {
                 console.log("Message sent successfully!");
                 setMessageInput(''); // Clear the message input
@@ -97,59 +106,59 @@ const Dashboard = () => {
             console.error("Error sending message:", error);
         }
     };
-    
+
 
     const handleUserClick = async (selectedUserId) => {
         try {
             const selectedUserProfile = allUsers.find(user => user._id === selectedUserId);
             setSelectedUser(selectedUserProfile);
-    
+
             // Store the selected user in localStorage
             localStorage.setItem("selectedUser", JSON.stringify(selectedUserProfile));
-    
+
             let conversation = conversations.find(conv =>
                 conv.participants?.includes(user.id) && conv.participants?.includes(selectedUserId)
             );
-    
+
             if (!conversation) {
                 const response = await axios.post('/api/conversation', {
                     senderId: user.id,
                     receiverId: selectedUserId
                 });
-    
+
                 if (response.status === 201) {
                     conversation = response.data;
                     setConversations(prevConversations => [...prevConversations, conversation]);
-    
+
                     // Store the conversation in localStorage
                     localStorage.setItem("selectedConversation", JSON.stringify(conversation));
                 }
             }
-    
+
             handleMessages(conversation.conversationId);
-    
+
             setAllUsers(prevUsers => prevUsers.filter(user => user._id !== selectedUserId));
         } catch (error) {
             console.error("Error handling user click:", error);
         }
     };
-    
+
     // On component mount or refresh, load from localStorage
     useEffect(() => {
         const savedUser = localStorage.getItem("selectedUser");
         const savedConversation = localStorage.getItem("selectedConversation");
-    
+
         if (savedUser) {
             setSelectedUser(JSON.parse(savedUser));
         }
-    
+
         if (savedConversation) {
             const conversation = JSON.parse(savedConversation);
             handleMessages(conversation.conversationId);
         }
     }, []);
-    
-    
+
+
 
     return (
         <div className="w-screen flex">
