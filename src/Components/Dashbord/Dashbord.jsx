@@ -104,13 +104,14 @@ const Dashboard = () => {
             const selectedUserProfile = allUsers.find(user => user._id === selectedUserId);
             setSelectedUser(selectedUserProfile);
     
-            // Check if the conversation already exists
+            // Store the selected user in localStorage
+            localStorage.setItem("selectedUser", JSON.stringify(selectedUserProfile));
+    
             let conversation = conversations.find(conv =>
                 conv.participants?.includes(user.id) && conv.participants?.includes(selectedUserId)
             );
     
             if (!conversation) {
-                // If no conversation exists, create a new one by hitting the backend POST API
                 const response = await axios.post('/api/conversation', {
                     senderId: user.id,
                     receiverId: selectedUserId
@@ -119,19 +120,35 @@ const Dashboard = () => {
                 if (response.status === 201) {
                     conversation = response.data;
                     setConversations(prevConversations => [...prevConversations, conversation]);
-                    console.log("New conversation created successfully!");
+    
+                    // Store the conversation in localStorage
+                    localStorage.setItem("selectedConversation", JSON.stringify(conversation));
                 }
             }
     
-            // Set the selected conversation to ensure it's properly set for sending messages
-            setSelectedConversation(conversation);
-    
-            // Fetch messages for the conversation if needed
             handleMessages(conversation.conversationId);
+    
+            setAllUsers(prevUsers => prevUsers.filter(user => user._id !== selectedUserId));
         } catch (error) {
             console.error("Error handling user click:", error);
         }
     };
+    
+    // On component mount or refresh, load from localStorage
+    useEffect(() => {
+        const savedUser = localStorage.getItem("selectedUser");
+        const savedConversation = localStorage.getItem("selectedConversation");
+    
+        if (savedUser) {
+            setSelectedUser(JSON.parse(savedUser));
+        }
+    
+        if (savedConversation) {
+            const conversation = JSON.parse(savedConversation);
+            handleMessages(conversation.conversationId);
+        }
+    }, []);
+    
     
 
     return (
