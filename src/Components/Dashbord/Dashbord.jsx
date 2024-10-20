@@ -9,7 +9,9 @@ const Dashboard = () => {
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [messageInput, setMessageInput] = useState("");
     const [allUsers, setAllUsers] = useState([]);
+    const [selectedUser, setSelectedUser] = useState('')
     const axios = useAxiosPublic();
+
 
     // Fetch user info from localStorage
     useEffect(() => {
@@ -74,22 +76,63 @@ const Dashboard = () => {
 
     const sendMessage = async (e) => {
         e.preventDefault();
+        if (!selectedConversation) {
+            console.error("No conversation selected for sending messages.");
+            return;
+        }
+    
         try {
             const response = await axios.post(`/api/messages`, {
                 conversationId: selectedConversation.conversationId,
                 senderId: user.id,
                 message: messageInput,
             });
-
+    
             if (response.status === 201) {
                 console.log("Message sent successfully!");
-                setMessageInput(''); // Optionally, clear the message input
+                setMessageInput(''); // Clear the message input
                 handleMessages(selectedConversation.conversationId); // Refresh messages after sending
             }
         } catch (error) {
             console.error("Error sending message:", error);
         }
     };
+    
+
+    const handleUserClick = async (selectedUserId) => {
+        try {
+            const selectedUserProfile = allUsers.find(user => user._id === selectedUserId);
+            setSelectedUser(selectedUserProfile);
+    
+            // Check if the conversation already exists
+            let conversation = conversations.find(conv =>
+                conv.participants?.includes(user.id) && conv.participants?.includes(selectedUserId)
+            );
+    
+            if (!conversation) {
+                // If no conversation exists, create a new one by hitting the backend POST API
+                const response = await axios.post('/api/conversation', {
+                    senderId: user.id,
+                    receiverId: selectedUserId
+                });
+    
+                if (response.status === 201) {
+                    conversation = response.data;
+                    setConversations(prevConversations => [...prevConversations, conversation]);
+                    console.log("New conversation created successfully!");
+                }
+            }
+    
+            // Set the selected conversation to ensure it's properly set for sending messages
+            setSelectedConversation(conversation);
+    
+            // Fetch messages for the conversation if needed
+            handleMessages(conversation.conversationId);
+        } catch (error) {
+            console.error("Error handling user click:", error);
+        }
+    };
+    
 
     return (
         <div className="w-screen flex">
@@ -188,9 +231,13 @@ const Dashboard = () => {
             <div className="w-[25%] border h-screen">
                 <div className="text-lg text-green-500 font-semibold px-10 py-16">People</div>
                 {allUsers
-                    .filter((allUser) => allUser.id !== user?.id) // Filter out the logged-in user
-                    .map((filteredUser) => (
-                        <div key={filteredUser.id} className="flex items-center my-8">
+                    .filter((allUser) => allUser._id !== user?.id) // Filter out the logged-in user
+                    .map((e) => (
+                        <div
+                            key={e._id}  // Use _id instead of id
+                            className="flex items-center my-8 px-10 cursor-pointer"
+                            onClick={() => handleUserClick(e._id)} // Call handleUserClick with selected user ID
+                        >
                             <img
                                 src="https://i.ibb.co/kqSnnFn/download-1.jpg"
                                 alt="User Avatar"
@@ -199,12 +246,13 @@ const Dashboard = () => {
                                 className="rounded-full"
                             />
                             <div className="ml-4">
-                                <h1 className="text-lg font-semibold">{filteredUser.name}</h1>
-                                <h1 className="text-sm font-medium">{filteredUser.email}</h1>
+                                <h1 className="text-lg font-semibold">{e.fullName}</h1>
+                                <h1 className="text-sm font-medium">{e.email}</h1>
                             </div>
                         </div>
                     ))}
             </div>
+
         </div>
     );
 };
