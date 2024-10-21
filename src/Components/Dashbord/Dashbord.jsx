@@ -11,16 +11,13 @@ const Dashboard = () => {
     const [messageInput, setMessageInput] = useState("");
     const [allUsers, setAllUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
-    const [socket, setSocket] = useState([])
+    const [socket, setSocket] = useState([]);
     const axios = useAxiosPublic();
 
-    // socket part
+    // Socket setup
     useEffect(() => {
-        setSocket(io('http://localhost:5050'))
-    }, [])
-
-
-
+        setSocket(io('http://localhost:5050'));
+    }, []);
 
     // Fetch user info from localStorage
     useEffect(() => {
@@ -30,7 +27,7 @@ const Dashboard = () => {
         }
     }, []);
 
-    // Fetch conversations from API
+    // Fetch conversations
     useEffect(() => {
         const fetchConversations = async () => {
             try {
@@ -48,7 +45,7 @@ const Dashboard = () => {
     }, [user, axios]);
 
     useEffect(() => {
-        // Fetch all users (for autocomplete feature)
+        // Fetch all users
         const fetchAllUsers = async () => {
             try {
                 const response = await axios.get('/api/users');
@@ -64,19 +61,12 @@ const Dashboard = () => {
 
     const handleMessages = async (conversationId) => {
         try {
-            console.log("Fetching conversation with ID:", conversationId);
-
-            // Set the selected conversation
             const selectedConv = conversations.find(conv => conv.conversationId === conversationId);
             setSelectedConversation(selectedConv);
 
-            // Make API call to fetch messages
             const res = await axios.get(`/api/messages/${conversationId}`);
-            console.log("API call completed. Status:", res);
-
             if (res.status === 200) {
-                const data = res.data || [];
-                setMessages(data);
+                setMessages(res.data);
             }
         } catch (error) {
             console.error("Error fetching conversation:", error.message || error);
@@ -85,10 +75,7 @@ const Dashboard = () => {
 
     const sendMessage = async (e) => {
         e.preventDefault();
-        if (!selectedConversation) {
-            console.error("No conversation selected for sending messages.");
-            return;
-        }
+        if (!selectedConversation) return;
 
         try {
             const response = await axios.post(`/api/messages`, {
@@ -98,23 +85,18 @@ const Dashboard = () => {
             });
 
             if (response.status === 201) {
-                console.log("Message sent successfully!");
-                setMessageInput(''); // Clear the message input
-                handleMessages(selectedConversation.conversationId); // Refresh messages after sending
+                setMessageInput(''); // Clear the input
+                handleMessages(selectedConversation.conversationId); // Refresh messages
             }
         } catch (error) {
             console.error("Error sending message:", error);
         }
     };
 
-
     const handleUserClick = async (selectedUserId) => {
         try {
             const selectedUserProfile = allUsers.find(user => user._id === selectedUserId);
             setSelectedUser(selectedUserProfile);
-
-            // Store the selected user in localStorage
-            localStorage.setItem("selectedUser", JSON.stringify(selectedUserProfile));
 
             let conversation = conversations.find(conv =>
                 conv.participants?.includes(user.id) && conv.participants?.includes(selectedUserId)
@@ -128,72 +110,50 @@ const Dashboard = () => {
 
                 if (response.status === 201) {
                     conversation = response.data;
-                    setConversations(prevConversations => [...prevConversations, conversation]);
-
-                    // Store the conversation in localStorage
-                    localStorage.setItem("selectedConversation", JSON.stringify(conversation));
+                    setConversations(prev => [...prev, conversation]);
                 }
             }
 
             handleMessages(conversation.conversationId);
-
-            setAllUsers(prevUsers => prevUsers.filter(user => user._id !== selectedUserId));
         } catch (error) {
             console.error("Error handling user click:", error);
         }
     };
 
-    // On component mount or refresh, load from localStorage
-    useEffect(() => {
-        const savedUser = localStorage.getItem("selectedUser");
-        const savedConversation = localStorage.getItem("selectedConversation");
-
-        if (savedUser) {
-            setSelectedUser(JSON.parse(savedUser));
-        }
-
-        if (savedConversation) {
-            const conversation = JSON.parse(savedConversation);
-            handleMessages(conversation.conversationId);
-        }
-    }, []);
-
-
-
     return (
-        <div className="w-screen flex">
-            <div className="w-[25%] bg-indigo-50 border h-screen">
-                {/* User Information */}
-                <div className="flex justify-center items-center p-14">
+        <div className="w-screen flex flex-col md:flex-row">
+
+            {/* Left Sidebar */}
+            <div className="w-full md:w-[25%] bg-indigo-50 border lg:h-screen">
+                <div className="flex justify-center items-center p-8 md:p-14">
                     <img
                         src="https://i.ibb.co/kqSnnFn/download-1.jpg"
                         alt="User Avatar"
-                        width={75}
-                        height={75}
+                        width={60}
+                        height={60}
                         className="rounded-full"
                     />
                     <div className="ml-4">
-                        <h1 className="text-2xl font-semibold">{user?.name || "User"}</h1>
-                        <h1 className="text-lg font-medium">My Account</h1>
+                        <h1 className="text-lg md:text-2xl font-semibold">{user?.name || "User"}</h1>
+                        <h1 className="text-sm md:text-lg font-medium">My Account</h1>
                     </div>
                 </div>
                 <hr />
-                {/* Conversations List */}
-                <div className="p-8">
+                <div className="p-4 md:p-8">
                     <div className="text-lg text-green-500 font-semibold">Messages</div>
-                    <div>
+                    <div className="h-[400px] md:h-auto overflow-y-auto">
                         {conversations.length > 0 ? (
                             conversations.map(({ conversationId, userName, email }) => (
                                 <div
                                     key={conversationId}
-                                    className="flex items-center my-8 cursor-pointer"
-                                    onClick={() => handleMessages(conversationId)} // Pass conversation ID
+                                    className="flex items-center my-6 md:my-8 cursor-pointer"
+                                    onClick={() => handleMessages(conversationId)}
                                 >
                                     <img
                                         src={'https://i.ibb.co/kqSnnFn/download-1.jpg'}
                                         alt="Conversation Avatar"
-                                        width={50}
-                                        height={50}
+                                        width={40}
+                                        height={40}
                                         className="rounded-full"
                                     />
                                     <div className="ml-4">
@@ -210,75 +170,80 @@ const Dashboard = () => {
             </div>
 
             {/* Messages Section */}
-            <div className="w-[50%] bg-white border h-screen flex flex-col items-center">
-                {selectedConversation ? (
-                    <div className="w-[75%] mt-10 bg-indigo-50 rounded-full h-[70px] flex items-center px-6">
+            <div className="w-full md:w-[50%] bg-white border h-screen flex flex-col">
+                {selectedConversation && (
+                    <div className="w-full bg-indigo-50 rounded-full h-[70px] flex items-center px-6 mt-4 md:mt-10">
                         <div className="cursor-pointer">
-                            <img src="https://i.ibb.co/kqSnnFn/download-1.jpg" alt="" width={50} height={50} className="rounded-full" />
+                            <img src="https://i.ibb.co/kqSnnFn/download-1.jpg" alt="" width={40} height={40} className="rounded-full" />
                         </div>
-                        <div className="ml-3 mr-auto">
-                            <h1 className="text-lg font-medium">{selectedConversation?.userName || ""}</h1>
+                        <div className="ml-3">
+                            <h1 className="text-lg font-medium">{selectedConversation?.userName}</h1>
                             <h2 className="text-sm text-gray-500 font-semibold">online</h2>
                         </div>
                     </div>
-                ) : null}
+                )}
 
-                {/* Messages */}
-                <div className="h-[75%] w-full overflow-x-scroll mt-2">
-                    <div className="h-[1000px] px-10 py-10">
-                        {messages.length > 0 ? (
-                            messages.map(({ message, user: { id } = {} }, index) => (
-                                id === user?.id ? (
-                                    <div key={index} className="ml-auto mb-6 p-4 max-w-[60%] rounded-b-xl bg-primary text-white rounded-tl-xl">
-                                        {message}
-                                    </div>
-                                ) : (
-                                    <div key={index} className="max-w-[60%] mb-6 p-4 rounded-b-xl bg-gray-200 rounded-tr-xl">
-                                        {message}
-                                    </div>
-                                )
-                            ))
-                        ) : (
-                            <div className="p-14  w-full text-xl font-bold">No conversation selected</div>
-                        )}
-                    </div>
+                {/* Messages Display */}
+                <div className="flex-1 overflow-y-auto mt-4 md:mt-2 px-4 md:px-10 py-10">
+                    {messages.length > 0 ? (
+                        messages.map(({ message, user: { id } = {} }, index) => (
+                            id === user?.id ? (
+                                <div key={index} className="ml-auto mb-6 p-4 max-w-[75%] bg-indigo-500 text-white rounded-tl-xl rounded-b-xl">
+                                    {message}
+                                </div>
+                            ) : (
+                                <div key={index} className="mr-auto mb-6 p-4 max-w-[75%] bg-gray-200 rounded-tr-xl rounded-b-xl">
+                                    {message}
+                                </div>
+                            )
+                        ))
+                    ) : (
+                        <div className="text-xl font-bold p-10">No conversation selected</div>
+                    )}
                 </div>
 
                 {/* Send Message Input */}
-                <div className="p-10 w-full flex items-center">
-                    <Input placeholder="Type your message here ..." value={messageInput} onChange={(e) => setMessageInput(e.target.value)} />
-                    <div className={`ml-2 p-2 rounded-full cursor-pointer ${!messageInput && "pointer-events-none"}`} onClick={sendMessage}>
-                        <button className="btn btn-outline ">Send</button>
+                <div className="p-4 md:p-10 w-full flex items-center">
+                    {/* Input Field */}
+                    <input
+                        className="flex-grow p-2 border border-gray-300 rounded-lg w-full"
+                        placeholder="Type your message here ..."
+                        value={messageInput}
+                        onChange={(e) => setMessageInput(e.target.value)}
+                    />
+
+                    {/* Button */}
+                    <div
+                        className={`ml-2 p-2 rounded-full cursor-pointer ${!messageInput && "pointer-events-none"}`}
+                        onClick={sendMessage}
+                    >
+                        <button className="px-4 py-2 text-white bg-blue-500 rounded-lg">Send</button>
                     </div>
                 </div>
+
             </div>
 
-            {/* Display All Users Except Logged-in User */}
-            <div className="w-[25%] border h-screen">
-                <div className="text-lg text-green-500 font-semibold px-10 py-16">People</div>
-                {allUsers
-                    .filter((allUser) => allUser._id !== user?.id) // Filter out the logged-in user
-                    .map((e) => (
-                        <div
-                            key={e._id}  // Use _id instead of id
-                            className="flex items-center my-8 px-10 cursor-pointer"
-                            onClick={() => handleUserClick(e._id)} // Call handleUserClick with selected user ID
-                        >
-                            <img
-                                src="https://i.ibb.co/kqSnnFn/download-1.jpg"
-                                alt="User Avatar"
-                                width={50}
-                                height={50}
-                                className="rounded-full"
-                            />
-                            <div className="ml-4">
-                                <h1 className="text-lg font-semibold">{e.fullName}</h1>
-                                <h1 className="text-sm font-medium">{e.email}</h1>
+            {/* Right Sidebar */}
+            <div className="w-full md:w-[25%] border h-screen p-4 md:px-10">
+                <div className="text-lg text-green-500 font-semibold py-4 md:py-16">People</div>
+                <div className="overflow-y-auto h-[400px] md:h-auto">
+                    {allUsers
+                        .filter((allUser) => allUser._id !== user?.id)
+                        .map((e) => (
+                            <div
+                                key={e._id}
+                                className="flex items-center my-4 md:my-8 cursor-pointer"
+                                onClick={() => handleUserClick(e._id)}
+                            >
+                                <img src="https://i.ibb.co/kqSnnFn/download-1.jpg" alt="" width={40} height={40} className="rounded-full" />
+                                <div className="ml-4">
+                                    <h1 className="text-lg font-semibold">{e?.fullName}</h1>
+                                    <h2 className="text-sm text-gray-600">{e?.email}</h2>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
+                </div>
             </div>
-
         </div>
     );
 };
