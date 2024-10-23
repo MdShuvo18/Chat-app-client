@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars */
 import { useEffect, useState } from "react";
 import useAxiosPublic from "../../useAxios/useAxios";
-import Input from "../Input/Input";
-import { io } from 'socket.io-client'
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -11,13 +11,7 @@ const Dashboard = () => {
     const [messageInput, setMessageInput] = useState("");
     const [allUsers, setAllUsers] = useState([]);
     const [selectedUser, setSelectedUser] = useState('');
-    const [socket, setSocket] = useState([]);
     const axios = useAxiosPublic();
-
-    // Socket setup
-    useEffect(() => {
-        setSocket(io('http://localhost:5050'));
-    }, []);
 
     // Fetch user info from localStorage
     useEffect(() => {
@@ -44,8 +38,8 @@ const Dashboard = () => {
         fetchConversations();
     }, [user, axios]);
 
+    // Fetch all users
     useEffect(() => {
-        // Fetch all users
         const fetchAllUsers = async () => {
             try {
                 const response = await axios.get('/api/users');
@@ -58,6 +52,31 @@ const Dashboard = () => {
         };
         fetchAllUsers();
     }, []);
+
+    // Fetch messages for the selected conversation with polling
+    useEffect(() => {
+        let pollingInterval;
+
+        if (selectedConversation) {
+            // Function to fetch the latest messages
+            const fetchMessages = async () => {
+                try {
+                    const res = await axios.get(`/api/messages/${selectedConversation.conversationId}`);
+                    if (res.status === 200) {
+                        setMessages(res.data);
+                    }
+                } catch (error) {
+                    console.error("Error fetching conversation:", error.message || error);
+                }
+            };
+
+            // Poll for new messages every 5 seconds
+            pollingInterval = setInterval(fetchMessages, 5000);
+
+            // Clean up interval on unmount or when selected conversation changes
+            return () => clearInterval(pollingInterval);
+        }
+    }, [selectedConversation, axios]);
 
     const handleMessages = async (conversationId) => {
         try {
@@ -75,6 +94,7 @@ const Dashboard = () => {
 
     const sendMessage = async (e) => {
         e.preventDefault();
+
         if (!selectedConversation) return;
 
         try {
@@ -86,7 +106,7 @@ const Dashboard = () => {
 
             if (response.status === 201) {
                 setMessageInput(''); // Clear the input
-                handleMessages(selectedConversation.conversationId); // Refresh messages
+                handleMessages(selectedConversation.conversationId); // Refresh messages immediately
             }
         } catch (error) {
             console.error("Error sending message:", error);
@@ -227,21 +247,29 @@ const Dashboard = () => {
             <div className="w-full md:w-[25%] border h-screen p-4 md:px-10">
                 <div className="text-lg text-green-500 font-semibold py-4 md:py-16">People</div>
                 <div className="overflow-y-auto h-[400px] md:h-auto">
-                    {allUsers
-                        .filter((allUser) => allUser._id !== user?.id)
-                        .map((e) => (
+                    {allUsers.length > 0 ? (
+                        allUsers.map(({ _id, fullName, email }) => (
                             <div
-                                key={e._id}
+                                key={_id}
                                 className="flex items-center my-4 md:my-8 cursor-pointer"
-                                onClick={() => handleUserClick(e._id)}
+                                onClick={() => handleUserClick(_id)}
                             >
-                                <img src="https://i.ibb.co/kqSnnFn/download-1.jpg" alt="" width={40} height={40} className="rounded-full" />
+                                <img
+                                    src={'https://i.ibb.co/kqSnnFn/download-1.jpg'}
+                                    alt="User Avatar"
+                                    width={40}
+                                    height={40}
+                                    className="rounded-full"
+                                />
                                 <div className="ml-4">
-                                    <h1 className="text-lg font-semibold">{e?.fullName}</h1>
-                                    <h2 className="text-sm text-gray-600">{e?.email}</h2>
+                                    <h1 className="text-lg font-semibold">{fullName}</h1>
+                                    <h1 className="text-sm font-medium">{email}</h1>
                                 </div>
                             </div>
-                        ))}
+                        ))
+                    ) : (
+                        <div className="text-xl font-semibold p-5">No Users Available</div>
+                    )}
                 </div>
             </div>
         </div>
